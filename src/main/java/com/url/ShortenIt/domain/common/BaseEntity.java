@@ -1,4 +1,4 @@
-package com.url.Shortly.domain.common;
+package com.url.ShortenIt.domain.common;
 
 import java.time.Instant;
 

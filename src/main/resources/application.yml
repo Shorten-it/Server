@@ -1,22 +1,65 @@
 spring:
-  application:
-    name: Shortly
-  datasource:
-    url: "jdbc:postgresql://localhost:5432/url_shortener"
-    username: postgres
-    password: password
-    driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
-        show_sql: true
         format_sql: true
-  data:
-    redis:
-      host: localhost
-      port: 6379
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+  
+  logging:
+    level:
+      org.hibernate.SQL: DEBUG
+      org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+      org.hibernate.orm.jdbc.bind: TRACE
+
+  application:
+    name: ShortenIt
+
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    serialization:
+      write-dates-as-timestamps: false
+      write-dates-with-zone-id: false
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_null
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,env,configprops
+      base-path: /actuator
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+      environment: ${spring.profiles.active:default}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        jvm.memory.used: true
+        process.cpu.usage: true
+      percentiles:
+        http.server.requests: 0.5,0.95,0.99
+        jvm.memory.used: 0.5,0.95,0.99
+        process.cpu.usage: 0.5,0.95,0.99
 
 ---
 spring:
@@ -25,13 +68,12 @@ spring:
       on-profile: docker
 
   datasource:
-    url: "jdbc:postgresql://db:5432/url_shortener"
-    username: postgres
-    password: password
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
+
   data:
     redis:
       host: redis
-      port: 6379
-
-
+      password: ${REDIS_PASSWORD}
