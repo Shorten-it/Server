@@ -43,7 +43,8 @@ public class SecurityConfig {
                                 "/v3/api-docs.yaml",
                                 "/ws-chat/**",  // WebSocket 엔드포인트 허용
                                 "/ws-chat",     // SockJS 엔드포인트 허용
-                                "/api/v1/wishlists/**"  // 위시리스트 API 임시 허용
+                                "/api/v1/wishlists/**",  // 위시리스트 API 임시 허용
+                                "/api/v1/url/**"  // URL 단축 API 허용
                         ).permitAll()
                         .anyRequest().authenticated() // 개발용
                 );
