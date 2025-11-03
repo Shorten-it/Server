@@ -41,12 +41,12 @@ public class SecurityConfig {
                                 "/oauth2/**",
                                 "/login/oauth2/**",
                                 "/v3/api-docs.yaml",
-                                "/ws-chat/**",  // WebSocket 엔드포인트 허용
-                                "/ws-chat",     // SockJS 엔드포인트 허용
-                                "/api/v1/wishlists/**",  // 위시리스트 API 임시 허용
-                                "/api/v1/url/**"  // URL 단축 API 허용
+                                "/ws-chat/**",
+                                "/ws-chat",
+                                "/api/v1/wishlists/**",
+                                "/api/v1/url/**"
                         ).permitAll()
-                        .anyRequest().authenticated() // 개발용
+                        .anyRequest().permitAll() // 로컬 성능 테스트를 위해 전체 허용 (테스트 후 원복 권장)
                 );
 
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
