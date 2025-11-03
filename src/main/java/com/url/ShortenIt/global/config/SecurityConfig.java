@@ -1,7 +1,6 @@
 package com.url.ShortenIt.global.config;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,9 +9,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -46,7 +43,8 @@ public class SecurityConfig {
                                 "/v3/api-docs.yaml",
                                 "/ws-chat/**",  // WebSocket 엔드포인트 허용
                                 "/ws-chat",     // SockJS 엔드포인트 허용
-                                "/api/v1/wishlists/**"  // 위시리스트 API 임시 허용
+                                "/api/v1/wishlists/**",  // 위시리스트 API 임시 허용
+                                "/api/v1/url/**"  // URL 단축 API 허용
                         ).permitAll()
                         .anyRequest().authenticated() // 개발용
                 );

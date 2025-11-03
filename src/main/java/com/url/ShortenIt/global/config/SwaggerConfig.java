@@ -15,6 +15,7 @@ public class SwaggerConfig {
         return GroupedOpenApi.builder()
                 .group("all") // 모두 적용
                 .pathsToMatch("/**")
+                .packagesToScan("com.url.ShortenIt")
                 .build();
     }
 
