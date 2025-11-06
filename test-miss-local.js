@@ -17,5 +17,3 @@ export default function () {
     'status is error (>=400)': (r) => r.status >= 400,
   });
 }
-
-

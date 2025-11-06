@@ -8,8 +8,11 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 @AllArgsConstructor
 @Service
@@ -25,29 +28,31 @@ public class UrlServiceIpml implements UrlService {
     private static final String CACHE_S2L_PREFIX = "S2L:"; // short -> long
 
     @Override
+    @Transactional
     public String saveShortUrl(String longUrl) {
+        String normalized = normalizeLongUrl(longUrl);
         // 1) 캐시에서 먼저 조회
-        String cachedShort = getFromCache(CACHE_L2S_PREFIX + longUrl);
+        String cachedShort = getFromCache(CACHE_L2S_PREFIX + normalized);
         if (cachedShort != null) {
             return cachedShort;
         }
 
-        Optional<Url> url = Urlrepository.findByLongUrl(longUrl);
+        Optional<Url> url = Urlrepository.findByLongUrl(normalized);
         if (url.isPresent()) {
             String shortUrl = url.get().getShortUrl();
             // 캐시에 기록
-            putToCache(CACHE_L2S_PREFIX + longUrl, shortUrl);
-            putToCache(CACHE_S2L_PREFIX + shortUrl, longUrl);
+            putToCache(CACHE_L2S_PREFIX + normalized, shortUrl);
+            putToCache(CACHE_S2L_PREFIX + shortUrl, normalized);
             return shortUrl;
         }else{
             SnowFlake snowFlake = new SnowFlake(1,1);
             Long id = snowFlake.nextId();
             String str = BaseConversion.encode(id);
-            Url urlEntity = Url.create(longUrl,str);
+            Url urlEntity = Url.create(normalized,str);
             Urlrepository.save(urlEntity);
             // 캐시에 기록
-            putToCache(CACHE_L2S_PREFIX + longUrl, str);
-            putToCache(CACHE_S2L_PREFIX + str, longUrl);
+            putToCache(CACHE_L2S_PREFIX + normalized, str);
+            putToCache(CACHE_S2L_PREFIX + str, normalized);
             return urlEntity.getShortUrl();
         }
 
@@ -56,6 +61,7 @@ public class UrlServiceIpml implements UrlService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Url searchLongUrl(String shortUrl) {
         // 1) 캐시에서 조회
         String longUrl = getFromCache(CACHE_S2L_PREFIX + shortUrl);
@@ -64,11 +70,30 @@ public class UrlServiceIpml implements UrlService {
         }
 
         Optional<Url> url =  Urlrepository.findByShortUrl(shortUrl);
-        Url found = url.get();
+        Url found = url.orElseThrow(() -> new IllegalArgumentException("Short URL not found: " + shortUrl));
         // 캐시에 기록
         putToCache(CACHE_S2L_PREFIX + shortUrl, found.getLongUrl());
         putToCache(CACHE_L2S_PREFIX + found.getLongUrl(), shortUrl);
         return found;
+    }
+
+    private String normalizeLongUrl(String original) {
+        if (original == null) {
+            throw new IllegalArgumentException("long_url must not be null");
+        }
+        String trimmed = original.trim();
+        if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+            trimmed = "https://" + trimmed;
+        }
+        try {
+            URI uri = new URI(trimmed);
+            if (uri.getScheme() == null || uri.getHost() == null) {
+                throw new IllegalArgumentException("Invalid URL: " + original);
+            }
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Invalid URL: " + original);
+        }
+        return trimmed;
     }
     
     private String getFromCache(String key) {

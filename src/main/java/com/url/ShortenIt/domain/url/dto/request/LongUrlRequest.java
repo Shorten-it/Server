@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Getter
 @Setter
@@ -14,5 +15,6 @@ import lombok.Setter;
 public class LongUrlRequest {
 
     @Schema(description = "원본 URL", example = "https://www.example.com")
-    public String longURL;
+    @JsonProperty("long_url")
+    private String longUrl;
 }

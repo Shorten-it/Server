@@ -24,10 +24,10 @@ public class Url extends BaseEntity{
     @Column(name = "url_id")
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     private String longUrl;
 
-    @Column
+    @Column(nullable = false)
     private String shortUrl;
 
     public static Url create(String longUrl, String shortUrl) {
