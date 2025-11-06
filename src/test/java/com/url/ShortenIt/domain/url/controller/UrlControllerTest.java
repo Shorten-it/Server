@@ -44,7 +44,7 @@ class UrlControllerTest {
         // given
         String longUrl = "https://www.example.com";
         LongUrlRequest request = new LongUrlRequest();
-        request.setLongURL(longUrl);
+        request.setLongUrl(longUrl);
 
         // when & then
         mockMvc.perform(post("/api/v1/url/shorten")
@@ -81,7 +81,7 @@ class UrlControllerTest {
         // given
         String longUrl = "https://www.naver.com";
         LongUrlRequest request = new LongUrlRequest();
-        request.setLongURL(longUrl);
+        request.setLongUrl(longUrl);
 
         // 첫 번째 생성
         String firstShortUrl = urlService.saveShortUrl(longUrl);
@@ -107,7 +107,7 @@ class UrlControllerTest {
         // given
         String longUrl = "https://www.github.com";
         LongUrlRequest request = new LongUrlRequest();
-        request.setLongURL(longUrl);
+        request.setLongUrl(longUrl);
 
         // when - URL 생성
         mockMvc.perform(post("/api/v1/url/shorten")

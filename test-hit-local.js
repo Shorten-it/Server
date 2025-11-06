@@ -12,7 +12,7 @@ const BASE_URL = 'http://localhost:8080/api/v1/url';
 
 export function setup() {
   // 캐시에 넣을 고정 URL을 하나 생성
-  const payload = JSON.stringify({ longURL: 'https://example.org/perf-test' });
+  const payload = JSON.stringify({ long_url: 'https://example.org/perf-test' });
   const headers = { 'Content-Type': 'application/json' };
   const res = http.post(`${BASE_URL}/shorten`, payload, { headers });
 
@@ -43,13 +43,3 @@ export default function (data) {
     console.error(`iter=${__ITER} status=${res.status} error=${res.error || ''}`);
   }
 }
-
-export function handleSummary(data) {
-  const statusCounts = data.metrics['http_req_duration'].values ? data.metrics : data.metrics;
-  // 간단 요약만 출력 (k6 기본 요약 외에 상태코드 분포 확인을 권장)
-  return {
-    stdout: `\nHint: 3xx가 실패로 집계되면 네트워크 실패(상태 0) 가능성이 큽니다. BASE_URL, 포트, 방화벽 확인하세요.\n`,
-  };
-}
-
-

@@ -32,21 +32,7 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable));
 
         http.authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/v3/api-docs.yaml",
-                                "/auth/**",
-                                "/oauth2/**",
-                                "/login/oauth2/**",
-                                "/v3/api-docs.yaml",
-                                "/ws-chat/**",
-                                "/ws-chat",
-                                "/api/v1/wishlists/**",
-                                "/api/v1/url/**"
-                        ).permitAll()
-                        .anyRequest().permitAll() // 로컬 성능 테스트를 위해 전체 허용 (테스트 후 원복 권장)
+                        .anyRequest().permitAll() // 전체 허용 (로컬 테스트 목적)
                 );
 
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
@@ -59,12 +45,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-
-        configuration.setAllowedMethods(List.of("*"));
+        configuration.addAllowedOriginPattern("*");
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
-        configuration.setExposedHeaders(List.of("Set-Cookie"));
-        configuration.setAllowCredentials(true);
+        configuration.setExposedHeaders(List.of("Set-Cookie", "Location"));
+        // 와일드카드 출처(*)를 사용하는 경우 credentials는 false 여야 브라우저가 허용
+        configuration.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
