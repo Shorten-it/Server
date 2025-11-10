@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 
 @AllArgsConstructor
 @Service
@@ -111,7 +112,7 @@ public class UrlServiceIpml implements UrlService {
     private void putToCache(String key, String value) {
         if (redisTemplate == null) return;
         try {
-            redisTemplate.opsForValue().set(key, value);
+            redisTemplate.opsForValue().set(key, value, Duration.ofHours(24));
         } catch (Exception ignored) {
         }
     }
