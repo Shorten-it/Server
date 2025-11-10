@@ -31,20 +31,23 @@ public class UrlServiceIpml implements UrlService {
     @Transactional
     public String saveShortUrl(String longUrl) {
         String normalized = normalizeLongUrl(longUrl);
-        // 1) 캐시에서 먼저 조회
+
+        // 1. 캐시 조회 (Cache-Aside 패턴 적용)
         String cachedShort = getFromCache(CACHE_L2S_PREFIX + normalized);
         if (cachedShort != null) {
             return cachedShort;
         }
 
+        // 2. DB 조회
         Optional<Url> url = Urlrepository.findByLongUrl(normalized);
         if (url.isPresent()) {
             String shortUrl = url.get().getShortUrl();
-            // 캐시에 기록
+            // 캐시 미스
             putToCache(CACHE_L2S_PREFIX + normalized, shortUrl);
             putToCache(CACHE_S2L_PREFIX + shortUrl, normalized);
             return shortUrl;
         }else{
+            // 4. 신규 URL 생성 (SnowFlake + Base62
             SnowFlake snowFlake = new SnowFlake(1,1);
             Long id = snowFlake.nextId();
             String str = BaseConversion.encode(id);

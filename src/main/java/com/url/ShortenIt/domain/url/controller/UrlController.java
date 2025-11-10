@@ -29,7 +29,7 @@ public class UrlController {
 
     @PostMapping("/shorten")
     @Operation(summary = "URL 단축", description = "URL을 단축합니다.")
-    public ApiResponse<?> join(@RequestBody LongUrlRequest request) {
+    public ApiResponse<?> createShortUrl(@RequestBody LongUrlRequest request) {
         try {
             String longUrl = request.getLongUrl();
             if (longUrl == null || longUrl.isBlank()) {
@@ -44,7 +44,7 @@ public class UrlController {
 
     @GetMapping("/{shortUrl}")
     @Operation(summary = "URL 리다이렉트", description = "단축된 URL을 리다이렉트합니다.")
-    public ResponseEntity<Void> login(@Parameter(description = "단축된 URL", example = "abc123") @PathVariable String shortUrl) {
+    public ResponseEntity<Void> redirectToLongUrl(@Parameter(description = "단축된 URL", example = "abc123") @PathVariable String shortUrl) {
         try {
             Url url = urlService.searchLongUrl(shortUrl);
             return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY)
