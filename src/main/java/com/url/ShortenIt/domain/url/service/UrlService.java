@@ -8,5 +8,5 @@ public interface UrlService {
 
     ShortUrlResponse saveShortUrl(String longUrl);
     UrlInfoResponse searchLongUrl(String shortUrl);
-
+    void deleteUrl(String shortUrl);
 }
