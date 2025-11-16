@@ -2,6 +2,7 @@ package com.url.ShortenIt.domain.url.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.url.ShortenIt.domain.url.dto.request.LongUrlRequest;
+import com.url.ShortenIt.domain.url.dto.response.ShortUrlResponse;
 import com.url.ShortenIt.domain.url.repository.Urlrepository;
 import com.url.ShortenIt.domain.url.service.UrlService;
 import org.junit.jupiter.api.DisplayName;
@@ -52,10 +53,8 @@ class UrlControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data").exists())
-                .andExpect(jsonPath("$.data").isString())
-                .andExpect(jsonPath("$.message").value("성공"))
-                .andExpect(jsonPath("$.code").value("success"));
+                .andExpect(jsonPath("$.short_url").exists())
+                .andExpect(jsonPath("$.short_url").isString());
 
         // 저장된 URL 확인
         assertThat(urlRepository.findByLongUrl(longUrl)).isPresent();
@@ -66,7 +65,8 @@ class UrlControllerTest {
     void testGetLongUrl_Success() throws Exception {
         // given
         String longUrl = "https://www.google.com";
-        String shortUrl = urlService.saveShortUrl(longUrl);
+        ShortUrlResponse response = urlService.saveShortUrl(longUrl);
+        String shortUrl = response.shortUrl();
 
         // when & then
         mockMvc.perform(get("/api/v1/url/{shortUrl}", shortUrl))
@@ -84,7 +84,8 @@ class UrlControllerTest {
         request.setLongUrl(longUrl);
 
         // 첫 번째 생성
-        String firstShortUrl = urlService.saveShortUrl(longUrl);
+        ShortUrlResponse firstResponse = urlService.saveShortUrl(longUrl);
+        String firstShortUrl = firstResponse.shortUrl();
 
         // 두 번째 생성 요청
         mockMvc.perform(post("/api/v1/url/shorten")
@@ -92,9 +93,7 @@ class UrlControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data").value(firstShortUrl))
-                .andExpect(jsonPath("$.message").value("성공"))
-                .andExpect(jsonPath("$.code").value("success"));
+                .andExpect(jsonPath("$.short_url").value(firstShortUrl));
 
         // 동일한 shortUrl이 반환되었는지 확인
         assertThat(urlRepository.findByLongUrl(longUrl)).isPresent();
@@ -115,7 +114,7 @@ class UrlControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data").exists());
+                .andExpect(jsonPath("$.short_url").exists());
 
         // shortUrl 추출 (간단한 문자열 추출 - 실제로는 JSON 파싱 필요)
         String shortUrl = urlRepository.findByLongUrl(longUrl)
