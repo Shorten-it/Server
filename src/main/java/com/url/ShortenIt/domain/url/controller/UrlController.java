@@ -5,8 +5,9 @@ package com.url.ShortenIt.domain.url.controller;
 import com.url.ShortenIt.domain.support.ApiResponse;
 import com.url.ShortenIt.domain.support.ApiResponseGenerator;
 import com.url.ShortenIt.domain.support.MessageCode;
-import com.url.ShortenIt.domain.url.domain.Url;
 import com.url.ShortenIt.domain.url.dto.request.LongUrlRequest;
+import com.url.ShortenIt.domain.url.dto.response.ShortUrlResponse;
+import com.url.ShortenIt.domain.url.dto.response.UrlInfoResponse;
 import com.url.ShortenIt.domain.url.service.UrlService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -34,23 +35,23 @@ public class UrlController {
         if (longUrl == null || longUrl.isBlank()) {
             throw new IllegalArgumentException("long_url 값이 비어 있습니다.");
         }
-        String shortUrl = urlService.saveShortUrl(longUrl);
-        return ApiResponseGenerator.success(shortUrl, HttpStatus.OK, MessageCode.SUCCESS);
+        ShortUrlResponse response = urlService.saveShortUrl(longUrl);
+        return ApiResponseGenerator.success(response, HttpStatus.OK, MessageCode.SUCCESS);
     }
 
     @GetMapping("/{shortUrl}")
     @Operation(summary = "URL 리다이렉트", description = "단축된 URL을 리다이렉트합니다.")
     public ResponseEntity<Void> redirectToLongUrl(@Parameter(description = "단축된 URL", example = "abc123") @PathVariable String shortUrl) {
-        Url url = urlService.searchLongUrl(shortUrl);
+        UrlInfoResponse urlInfo = urlService.searchLongUrl(shortUrl);
         return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY)
-                .location(URI.create(url.getLongUrl()))
+                .location(URI.create(urlInfo.longUrl()))
                 .build();
     }
 
     @GetMapping("/{shortUrl}/preview")
     @Operation(summary = "URL 미리보기", description = "리다이렉트 대신 원본 URL을 JSON으로 반환합니다.")
     public ApiResponse<?> preview(@Parameter(description = "단축된 URL", example = "abc123") @PathVariable String shortUrl) {
-        Url url = urlService.searchLongUrl(shortUrl);
-        return ApiResponseGenerator.success(url.getLongUrl(), HttpStatus.OK, MessageCode.SUCCESS);
+        UrlInfoResponse urlInfo = urlService.searchLongUrl(shortUrl);
+        return ApiResponseGenerator.success(urlInfo, HttpStatus.OK, MessageCode.SUCCESS);
     }
 }

@@ -1,6 +1,8 @@
 package com.url.ShortenIt.domain.url.service;
 
 import com.url.ShortenIt.domain.url.domain.Url;
+import com.url.ShortenIt.domain.url.dto.response.ShortUrlResponse;
+import com.url.ShortenIt.domain.url.dto.response.UrlInfoResponse;
 import com.url.ShortenIt.domain.url.repository.Urlrepository;
 import com.url.ShortenIt.domain.url.util.BaseConversion;
 import com.url.ShortenIt.domain.url.util.SnowFlake;
@@ -30,13 +32,13 @@ public class UrlServiceIpml implements UrlService {
 
     @Override
     @Transactional
-    public String saveShortUrl(String longUrl) {
+    public ShortUrlResponse saveShortUrl(String longUrl) {
         String normalized = normalizeLongUrl(longUrl);
 
         // 1. 캐시 조회 (Cache-Aside 패턴 적용)
         String cachedShort = getFromCache(CACHE_L2S_PREFIX + normalized);
         if (cachedShort != null) {
-            return cachedShort;
+            return new ShortUrlResponse(cachedShort);
         }
 
         // 2. DB 조회
@@ -46,7 +48,7 @@ public class UrlServiceIpml implements UrlService {
             // 캐시 미스
             putToCache(CACHE_L2S_PREFIX + normalized, shortUrl);
             putToCache(CACHE_S2L_PREFIX + shortUrl, normalized);
-            return shortUrl;
+            return new ShortUrlResponse(shortUrl);
         }else{
             // 4. 신규 URL 생성 (SnowFlake + Base62
             SnowFlake snowFlake = new SnowFlake(1,1);
@@ -57,7 +59,7 @@ public class UrlServiceIpml implements UrlService {
             // 캐시에 기록
             putToCache(CACHE_L2S_PREFIX + normalized, str);
             putToCache(CACHE_S2L_PREFIX + str, normalized);
-            return urlEntity.getShortUrl();
+            return new ShortUrlResponse(urlEntity.getShortUrl());
         }
 
  
@@ -66,11 +68,11 @@ public class UrlServiceIpml implements UrlService {
 
     @Override
     @Transactional(readOnly = true)
-    public Url searchLongUrl(String shortUrl) {
+    public UrlInfoResponse searchLongUrl(String shortUrl) {
         // 1) 캐시에서 조회
         String longUrl = getFromCache(CACHE_S2L_PREFIX + shortUrl);
         if (longUrl != null) {
-            return Url.create(longUrl, shortUrl);
+            return new UrlInfoResponse(longUrl, shortUrl);
         }
 
         Optional<Url> url =  Urlrepository.findByShortUrl(shortUrl);
@@ -78,7 +80,7 @@ public class UrlServiceIpml implements UrlService {
         // 캐시에 기록
         putToCache(CACHE_S2L_PREFIX + shortUrl, found.getLongUrl());
         putToCache(CACHE_L2S_PREFIX + found.getLongUrl(), shortUrl);
-        return found;
+        return new UrlInfoResponse(found.getLongUrl(), found.getShortUrl());
     }
 
     private String normalizeLongUrl(String original) {
