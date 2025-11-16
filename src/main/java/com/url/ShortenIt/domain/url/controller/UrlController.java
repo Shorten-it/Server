@@ -51,4 +51,11 @@ public class UrlController {
         UrlInfoResponse urlInfo = urlService.searchLongUrl(shortUrl);
         return ResponseEntity.ok(urlInfo);
     }
+
+    @DeleteMapping("/{shortUrl}")
+    @Operation(summary = "URL 삭제", description = "단축된 URL을 삭제합니다.")
+    public ResponseEntity<Void> deleteUrl(@Parameter(description = "단축된 URL", example = "abc123") @PathVariable String shortUrl) {
+        urlService.deleteUrl(shortUrl);
+        return ResponseEntity.noContent().build();
+    }
 }

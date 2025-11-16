@@ -83,6 +83,17 @@ public class UrlServiceIpml implements UrlService {
         return new UrlInfoResponse(found.getLongUrl(), found.getShortUrl());
     }
 
+    @Override
+    @Transactional
+    public void deleteUrl(String shortUrl) {
+        Url url = Urlrepository.findByShortUrl(shortUrl).orElseThrow(() -> new IllegalArgumentException("Short URL not found: " + shortUrl));
+        String longUrl = url.getLongUrl();
+        Urlrepository.delete(url);
+        // Redis 캐시 삭제
+        deleteFromCache(CACHE_S2L_PREFIX + shortUrl);
+        deleteFromCache(CACHE_L2S_PREFIX + longUrl);
+    }
+
     private String normalizeLongUrl(String original) {
         if (original == null) {
             throw new IllegalArgumentException("long_url must not be null");
@@ -115,6 +126,14 @@ public class UrlServiceIpml implements UrlService {
         if (redisTemplate == null) return;
         try {
             redisTemplate.opsForValue().set(key, value, Duration.ofHours(24));
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void deleteFromCache(String key) {
+        if (redisTemplate == null) return;
+        try {
+            redisTemplate.delete(key);
         } catch (Exception ignored) {
         }
     }
