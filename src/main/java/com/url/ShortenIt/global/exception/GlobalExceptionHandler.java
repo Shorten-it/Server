@@ -1,29 +1,31 @@
 package com.url.ShortenIt.global.exception;
 
-import com.url.ShortenIt.domain.support.ApiResponse;
-import com.url.ShortenIt.domain.support.ApiResponseGenerator;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.Map;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<ApiResponse.FailureBody>> handleIllegalArgumentException(IllegalArgumentException ex) {
-        return new ResponseEntity<>(
-                ApiResponseGenerator.fail("invalid_request", ex.getMessage(), HttpStatus.BAD_REQUEST),
-                HttpStatus.BAD_REQUEST
-        );
+    public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                        "error", "invalid_request",
+                        "message", ex.getMessage()
+                ));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<ApiResponse.FailureBody>> handleException(Exception ex) {
-        return new ResponseEntity<>(
-                ApiResponseGenerator.fail("internal_error", ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR),
-                HttpStatus.INTERNAL_SERVER_ERROR
-        );
+    public ResponseEntity<Map<String, String>> handleException(Exception ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                        "error", "internal_error",
+                        "message", ex.getMessage()
+                ));
     }
 }
 

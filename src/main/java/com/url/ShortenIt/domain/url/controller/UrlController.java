@@ -2,9 +2,6 @@ package com.url.ShortenIt.domain.url.controller;
 
 
 
-import com.url.ShortenIt.domain.support.ApiResponse;
-import com.url.ShortenIt.domain.support.ApiResponseGenerator;
-import com.url.ShortenIt.domain.support.MessageCode;
 import com.url.ShortenIt.domain.url.dto.request.LongUrlRequest;
 import com.url.ShortenIt.domain.url.dto.response.ShortUrlResponse;
 import com.url.ShortenIt.domain.url.dto.response.UrlInfoResponse;
@@ -30,13 +27,13 @@ public class UrlController {
 
     @PostMapping("/shorten")
     @Operation(summary = "URL 단축", description = "URL을 단축합니다.")
-    public ApiResponse<?> createShortUrl(@RequestBody LongUrlRequest request) {
+    public ResponseEntity<ShortUrlResponse> createShortUrl(@RequestBody LongUrlRequest request) {
         String longUrl = request.getLongUrl();
         if (longUrl == null || longUrl.isBlank()) {
             throw new IllegalArgumentException("long_url 값이 비어 있습니다.");
         }
         ShortUrlResponse response = urlService.saveShortUrl(longUrl);
-        return ApiResponseGenerator.success(response, HttpStatus.OK, MessageCode.SUCCESS);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{shortUrl}")
@@ -50,8 +47,8 @@ public class UrlController {
 
     @GetMapping("/{shortUrl}/preview")
     @Operation(summary = "URL 미리보기", description = "리다이렉트 대신 원본 URL을 JSON으로 반환합니다.")
-    public ApiResponse<?> preview(@Parameter(description = "단축된 URL", example = "abc123") @PathVariable String shortUrl) {
+    public ResponseEntity<UrlInfoResponse> preview(@Parameter(description = "단축된 URL", example = "abc123") @PathVariable String shortUrl) {
         UrlInfoResponse urlInfo = urlService.searchLongUrl(shortUrl);
-        return ApiResponseGenerator.success(urlInfo, HttpStatus.OK, MessageCode.SUCCESS);
+        return ResponseEntity.ok(urlInfo);
     }
 }
