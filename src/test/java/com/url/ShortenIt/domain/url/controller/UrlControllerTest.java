@@ -65,7 +65,7 @@ class UrlControllerTest {
     void testGetLongUrl_Success() throws Exception {
         // given
         String longUrl = "https://www.google.com";
-        ShortUrlResponse response = urlService.saveShortUrl(longUrl);
+        ShortUrlResponse response = urlService.saveShortUrl(longUrl, null);
         String shortUrl = response.shortUrl();
 
         // when & then
@@ -84,7 +84,7 @@ class UrlControllerTest {
         request.setLongUrl(longUrl);
 
         // 첫 번째 생성
-        ShortUrlResponse firstResponse = urlService.saveShortUrl(longUrl);
+        ShortUrlResponse firstResponse = urlService.saveShortUrl(longUrl, null);
         String firstShortUrl = firstResponse.shortUrl();
 
         // 두 번째 생성 요청
