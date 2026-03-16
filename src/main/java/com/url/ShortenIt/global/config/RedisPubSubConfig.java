@@ -14,6 +14,7 @@ import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 public class RedisPubSubConfig {
 
     public static final String CACHE_INVALIDATION_TOPIC = "cache:invalidation";
+    public static final String LISTENER_METHOD = "onMessage";
 
     @Bean
     public ChannelTopic cacheInvalidationTopic() {
@@ -22,7 +23,7 @@ public class RedisPubSubConfig {
 
     @Bean
     public MessageListenerAdapter messageListenerAdapter(CacheInvalidationSubscriber subscriber) {
-        return new MessageListenerAdapter(subscriber, "onMessage");
+        return new MessageListenerAdapter(subscriber, LISTENER_METHOD);
     }
 
     @Bean

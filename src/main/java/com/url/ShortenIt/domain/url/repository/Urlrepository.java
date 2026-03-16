@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 
 import com.url.ShortenIt.domain.url.domain.Url;
@@ -18,8 +17,6 @@ public interface Urlrepository extends JpaRepository<Url, Long> {
 
     Optional<Url> findByLongUrl(String longUrl);
     Optional<Url> findByShortUrl(String shortUrl);
-
-    List<Url> findAllByExpiredAtBeforeAndExpiredAtIsNotNull(Instant now);
 
     @Modifying
     @Query("DELETE FROM Url u WHERE u.expiredAt IS NOT NULL AND u.expiredAt < :now")
