@@ -16,6 +16,7 @@ import java.util.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
+import java.time.Instant;
 
 @AllArgsConstructor
 @Service
@@ -33,7 +34,7 @@ public class UrlServiceIpml implements UrlService {
 
     @Override
     @Transactional
-    public ShortUrlResponse saveShortUrl(String longUrl) {
+    public ShortUrlResponse saveShortUrl(String longUrl, Instant expiredAt) {
         String normalized = normalizeLongUrl(longUrl);
 
         // 1. 캐시 조회 (Cache-Aside 패턴 적용)
@@ -51,11 +52,11 @@ public class UrlServiceIpml implements UrlService {
             putToCache(CACHE_S2L_PREFIX + shortUrl, normalized);
             return new ShortUrlResponse(shortUrl);
         }else{
-            // 4. 신규 URL 생성 (SnowFlake + Base62
+            // 4. 신규 URL 생성 (SnowFlake + Base62)
             SnowFlake snowFlake = new SnowFlake(1,1);
             Long id = snowFlake.nextId();
             String str = BaseConversion.encode(id);
-            Url urlEntity = Url.create(normalized,str);
+            Url urlEntity = Url.create(normalized, str, expiredAt);
             Urlrepository.save(urlEntity);
             // 캐시에 기록
             putToCache(CACHE_L2S_PREFIX + normalized, str);
@@ -78,6 +79,10 @@ public class UrlServiceIpml implements UrlService {
 
         Optional<Url> url =  Urlrepository.findByShortUrl(shortUrl);
         Url found = url.orElseThrow(() -> new IllegalArgumentException("Short URL not found: " + shortUrl));
+        // 만료된 URL 체크
+        if (found.isExpired()) {
+            throw new IllegalArgumentException("This URL has expired: " + shortUrl);
+        }
         // 캐시에 기록
         putToCache(CACHE_S2L_PREFIX + shortUrl, found.getLongUrl());
         putToCache(CACHE_L2S_PREFIX + found.getLongUrl(), shortUrl);

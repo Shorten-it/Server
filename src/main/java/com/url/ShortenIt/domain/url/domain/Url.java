@@ -13,6 +13,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 
+import java.time.Instant;
+
 @Entity
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
@@ -30,11 +32,26 @@ public class Url extends BaseEntity{
     @Column(nullable = false)
     private String shortUrl;
 
+    @Column(name = "expired_at")
+    private Instant expiredAt;
+
     public static Url create(String longUrl, String shortUrl) {
         return Url.builder()
             .longUrl(longUrl)
             .shortUrl(shortUrl)
             .build();
+    }
+
+    public static Url create(String longUrl, String shortUrl, Instant expiredAt) {
+        return Url.builder()
+            .longUrl(longUrl)
+            .shortUrl(shortUrl)
+            .expiredAt(expiredAt)
+            .build();
+    }
+
+    public boolean isExpired() {
+        return expiredAt != null && Instant.now().isAfter(expiredAt);
     }
 }
 

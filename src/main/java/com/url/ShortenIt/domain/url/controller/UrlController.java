@@ -32,7 +32,7 @@ public class UrlController {
         if (longUrl == null || longUrl.isBlank()) {
             throw new IllegalArgumentException("long_url 값이 비어 있습니다.");
         }
-        ShortUrlResponse response = urlService.saveShortUrl(longUrl);
+        ShortUrlResponse response = urlService.saveShortUrl(longUrl, request.getExpiredAt());
         return ResponseEntity.ok(response);
     }
 
