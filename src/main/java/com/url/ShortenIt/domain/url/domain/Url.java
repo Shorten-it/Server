@@ -51,8 +51,10 @@ public class Url extends BaseEntity{
     }
 
     public boolean isExpired() {
-        return expiredAt != null && Instant.now().isAfter(expiredAt);
+        return isExpired(Instant.now());
+    }
+
+    public boolean isExpired(Instant now) {
+        return expiredAt != null && now.isAfter(expiredAt);
     }
 }
-
-

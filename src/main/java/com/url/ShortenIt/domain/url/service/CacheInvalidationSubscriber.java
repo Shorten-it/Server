@@ -26,9 +26,14 @@ public class CacheInvalidationSubscriber {
             String shortUrl = parts[0];
             String longUrl = parts[1];
 
+            if (shortUrl.isBlank() || longUrl.isBlank()) {
+                log.warn("Blank shortUrl or longUrl in cache invalidation message: {}", message);
+                return;
+            }
+
             redisTemplate.delete(CACHE_S2L_PREFIX + shortUrl);
             redisTemplate.delete(CACHE_L2S_PREFIX + longUrl);
-            log.info("Cache invalidated for shortUrl={}, longUrl={}", shortUrl, longUrl);
+            log.debug("Cache invalidated for shortUrl={}", shortUrl);
         } catch (Exception e) {
             log.error("Failed to process cache invalidation message", e);
         }

@@ -5,6 +5,7 @@ import com.url.ShortenIt.domain.url.dto.request.LongUrlRequest;
 import com.url.ShortenIt.domain.url.dto.response.ShortUrlResponse;
 import com.url.ShortenIt.domain.url.repository.Urlrepository;
 import com.url.ShortenIt.domain.url.service.UrlService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -23,7 +23,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional
 @ActiveProfiles("test")
 class UrlControllerTest {
 
@@ -38,6 +37,11 @@ class UrlControllerTest {
 
     @Autowired
     private Urlrepository urlRepository;
+
+    @AfterEach
+    void tearDown() {
+        urlRepository.deleteAll();
+    }
 
     @Test
     @DisplayName("URL 단축 생성 테스트 - 성공")
@@ -116,7 +120,7 @@ class UrlControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.short_url").exists());
 
-        // shortUrl 추출 (간단한 문자열 추출 - 실제로는 JSON 파싱 필요)
+        // shortUrl 추출
         String shortUrl = urlRepository.findByLongUrl(longUrl)
                 .orElseThrow()
                 .getShortUrl();
