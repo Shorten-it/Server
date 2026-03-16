@@ -69,3 +69,7 @@ out/
 
 .results/
 results.json
+
+### OMC / Claude ###
+.omc/
+.claude/
