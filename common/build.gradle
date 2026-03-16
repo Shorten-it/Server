@@ -1,0 +1,20 @@
+plugins {
+	id 'java-library'
+}
+
+// common 모듈은 라이브러리 JAR만 생성
+jar { enabled = true }
+
+dependencies {
+	api 'org.springframework.boot:spring-boot-starter-data-jpa'
+	api 'org.springframework.boot:spring-boot-starter-validation'
+
+	// Swagger annotations
+	api 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
+
+	// Google Guava
+	api 'com.google.guava:guava:33.3.1-jre'
+
+	runtimeOnly 'com.h2database:h2'
+	runtimeOnly 'org.postgresql:postgresql'
+}

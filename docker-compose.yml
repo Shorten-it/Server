@@ -8,47 +8,41 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      - app-1
-      - app-2
+      - url-service
+      - redirect-service
 
-  app-1:
-    build: .
+  url-service:
+    build:
+      context: .
+      dockerfile: url-service/Dockerfile
     expose:
-      - "8080"
+      - "8081"
     environment:
       - TZ=Asia/Seoul
       - SPRING_PROFILES_ACTIVE=docker
-
-      # PostgreSQL 연결 정보
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
-
-      # === 1. Redis 비밀번호를 Spring Boot에 전달 ===
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
 
-  app-2:
-    build: .
+  redirect-service:
+    build:
+      context: .
+      dockerfile: redirect-service/Dockerfile
     expose:
-      - "8080"
+      - "8082"
     environment:
       - TZ=Asia/Seoul
       - SPRING_PROFILES_ACTIVE=docker
-
-      # PostgreSQL 연결 정보
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
-
-      # === 1. Redis 비밀번호를 Spring Boot에 전달 ===
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-
     depends_on:
       db:
         condition: service_healthy
@@ -80,7 +74,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
     ports:
