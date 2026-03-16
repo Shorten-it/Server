@@ -23,7 +23,8 @@ public class UrlServiceIpml implements UrlService {
 
     private final Urlrepository Urlrepository;
     private final BaseConversion BaseConversion;
-    
+    private final CacheInvalidationPublisher cacheInvalidationPublisher;
+
     @Autowired(required = false)
     private StringRedisTemplate redisTemplate;
 
@@ -89,9 +90,8 @@ public class UrlServiceIpml implements UrlService {
         Url url = Urlrepository.findByShortUrl(shortUrl).orElseThrow(() -> new IllegalArgumentException("Short URL not found: " + shortUrl));
         String longUrl = url.getLongUrl();
         Urlrepository.delete(url);
-        // Redis 캐시 삭제
-        deleteFromCache(CACHE_S2L_PREFIX + shortUrl);
-        deleteFromCache(CACHE_L2S_PREFIX + longUrl);
+        // Redis Pub/Sub을 통한 캐시 무효화 (모든 인스턴스에 전파)
+        cacheInvalidationPublisher.publishInvalidation(shortUrl, longUrl);
     }
 
     private String normalizeLongUrl(String original) {
