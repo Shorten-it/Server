@@ -1,1 +1,5 @@
 rootProject.name = 'Shortly'
+
+include 'common'
+include 'url-service'
+include 'redirect-service'
