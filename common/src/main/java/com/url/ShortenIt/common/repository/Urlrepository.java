@@ -14,14 +14,12 @@ import com.url.ShortenIt.common.domain.Url;
 @Repository
 public interface Urlrepository extends JpaRepository<Url, Long> {
 
-    Optional<Url> findById(Long id);
-
     Optional<Url> findByLongUrl(String longUrl);
     Optional<Url> findByShortUrl(String shortUrl);
 
     List<Url> findAllByExpiredAtBeforeAndExpiredAtIsNotNull(Instant now);
 
     @Modifying
-    @Query("DELETE FROM Url u WHERE u.expiredAt IS NOT NULL AND u.expiredAt < :now")
-    int deleteAllExpiredBefore(@Param("now") Instant now);
+    @Query("UPDATE Url u SET u.deletedAt = :now WHERE u.expiredAt IS NOT NULL AND u.expiredAt < :now AND u.deletedAt IS NULL")
+    int softDeleteAllExpiredBefore(@Param("now") Instant now);
 }

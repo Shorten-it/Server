@@ -20,4 +20,8 @@ public abstract class BaseEntity {
 
     @Column(name = "deleted_at")
     private Instant deletedAt;
+
+    protected void markDeleted() {
+        this.deletedAt = Instant.now();
+    }
 }

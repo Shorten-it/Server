@@ -68,7 +68,7 @@ public class UrlManagementServiceImpl implements UrlManagementService {
         Url url = urlrepository.findByShortUrl(shortUrl)
                 .orElseThrow(() -> new IllegalArgumentException("Short URL not found: " + shortUrl));
         String longUrl = url.getLongUrl();
-        urlrepository.delete(url);
+        url.softDelete();
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
