@@ -1,0 +1,13 @@
+.git
+.gitignore
+.idea
+.vscode
+.claude
+.omc
+*.md
+docs/
+build/
+*/build/
+.gradle
+*/src/test/
+k6/
