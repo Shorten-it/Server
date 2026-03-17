@@ -1,5 +1,6 @@
 package com.url.ShortenIt.common.util;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,11 +24,9 @@ public class SnowFlake {
     private long sequence = 0L;
     private long lastTimestamp = -1L;
 
-    public SnowFlake() {
-        this(1, 1);
-    }
-
-    public SnowFlake(long datacenterId, long machineId) {
+    public SnowFlake(
+            @Value("${snowflake.datacenter-id:1}") long datacenterId,
+            @Value("${snowflake.machine-id:1}") long machineId) {
         if (datacenterId > MAX_DATACENTER_NUM || datacenterId < 0) {
             throw new IllegalArgumentException("Datacenter ID can't be greater than " + MAX_DATACENTER_NUM + " or less than 0");
         }
