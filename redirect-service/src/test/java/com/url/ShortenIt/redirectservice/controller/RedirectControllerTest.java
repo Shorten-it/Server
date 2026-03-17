@@ -1,7 +1,7 @@
 package com.url.ShortenIt.redirectservice.controller;
 
 import com.url.ShortenIt.common.domain.Url;
-import com.url.ShortenIt.common.repository.Urlrepository;
+import com.url.ShortenIt.common.repository.UrlRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class RedirectControllerTest {
 
     @Autowired private MockMvc mockMvc;
-    @Autowired private Urlrepository urlRepository;
+    @Autowired private UrlRepository urlRepository;
     @Autowired private JdbcTemplate jdbcTemplate;
 
     @AfterEach

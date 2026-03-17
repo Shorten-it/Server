@@ -2,12 +2,11 @@ package com.url.ShortenIt.urlservice.service;
 
 import com.url.ShortenIt.common.domain.Url;
 import com.url.ShortenIt.common.dto.response.ShortUrlResponse;
-import com.url.ShortenIt.common.repository.Urlrepository;
+import com.url.ShortenIt.common.repository.UrlRepository;
+import com.url.ShortenIt.common.service.CacheService;
 import com.url.ShortenIt.common.util.BaseConversion;
 import com.url.ShortenIt.common.util.SnowFlake;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -19,45 +18,43 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 
+import static com.url.ShortenIt.common.service.CacheService.CACHE_L2S_PREFIX;
+import static com.url.ShortenIt.common.service.CacheService.CACHE_S2L_PREFIX;
+
 @RequiredArgsConstructor
 @Service
 public class UrlManagementServiceImpl implements UrlManagementService {
 
-    private final Urlrepository urlrepository;
+    private final UrlRepository urlRepository;
     private final BaseConversion baseConversion;
     private final CacheInvalidationPublisher cacheInvalidationPublisher;
     private final SnowFlake snowFlake;
-
-    @Autowired(required = false)
-    private StringRedisTemplate redisTemplate;
-
-    private static final String CACHE_L2S_PREFIX = "L2S:";
-    private static final String CACHE_S2L_PREFIX = "S2L:";
+    private final CacheService cacheService;
 
     @Override
     @Transactional
     public ShortUrlResponse saveShortUrl(String longUrl, Instant expiredAt) {
         String normalized = normalizeLongUrl(longUrl);
 
-        String cachedShort = getFromCache(CACHE_L2S_PREFIX + normalized);
+        String cachedShort = cacheService.get(CACHE_L2S_PREFIX + normalized);
         if (cachedShort != null) {
             return new ShortUrlResponse(cachedShort);
         }
 
-        Optional<Url> url = urlrepository.findByLongUrl(normalized);
+        Optional<Url> url = urlRepository.findByLongUrl(normalized);
         if (url.isPresent()) {
             String shortUrl = url.get().getShortUrl();
-            putToCache(CACHE_L2S_PREFIX + normalized, shortUrl);
-            putToCache(CACHE_S2L_PREFIX + shortUrl, normalized);
+            cacheService.put(CACHE_L2S_PREFIX + normalized, shortUrl);
+            cacheService.put(CACHE_S2L_PREFIX + shortUrl, normalized);
             return new ShortUrlResponse(shortUrl);
         } else {
             Long id = snowFlake.nextId();
             String str = baseConversion.encode(id);
             Url urlEntity = Url.create(normalized, str, expiredAt);
-            urlrepository.save(urlEntity);
-            Duration cacheTtl = calculateCacheTtl(expiredAt);
-            putToCache(CACHE_L2S_PREFIX + normalized, str, cacheTtl);
-            putToCache(CACHE_S2L_PREFIX + str, normalized, cacheTtl);
+            urlRepository.save(urlEntity);
+            Duration cacheTtl = cacheService.calculateCacheTtl(expiredAt);
+            cacheService.put(CACHE_L2S_PREFIX + normalized, str, cacheTtl);
+            cacheService.put(CACHE_S2L_PREFIX + str, normalized, cacheTtl);
             return new ShortUrlResponse(urlEntity.getShortUrl());
         }
     }
@@ -65,7 +62,7 @@ public class UrlManagementServiceImpl implements UrlManagementService {
     @Override
     @Transactional
     public void deleteUrl(String shortUrl) {
-        Url url = urlrepository.findByShortUrl(shortUrl)
+        Url url = urlRepository.findByShortUrl(shortUrl)
                 .orElseThrow(() -> new IllegalArgumentException("Short URL not found: " + shortUrl));
         String longUrl = url.getLongUrl();
         url.softDelete();
@@ -94,29 +91,5 @@ public class UrlManagementServiceImpl implements UrlManagementService {
             throw new IllegalArgumentException("Invalid URL: " + original);
         }
         return trimmed;
-    }
-
-    private String getFromCache(String key) {
-        if (redisTemplate == null) return null;
-        try { return redisTemplate.opsForValue().get(key); }
-        catch (Exception ignored) { return null; }
-    }
-
-    private void putToCache(String key, String value) {
-        putToCache(key, value, Duration.ofHours(24));
-    }
-
-    private void putToCache(String key, String value, Duration ttl) {
-        if (redisTemplate == null) return;
-        try { redisTemplate.opsForValue().set(key, value, ttl); }
-        catch (Exception ignored) {}
-    }
-
-    private Duration calculateCacheTtl(Instant expiredAt) {
-        if (expiredAt == null) return Duration.ofHours(24);
-        Duration remaining = Duration.between(Instant.now(), expiredAt);
-        if (remaining.isNegative() || remaining.isZero()) return Duration.ofSeconds(1);
-        Duration defaultTtl = Duration.ofHours(24);
-        return remaining.compareTo(defaultTtl) < 0 ? remaining : defaultTtl;
     }
 }

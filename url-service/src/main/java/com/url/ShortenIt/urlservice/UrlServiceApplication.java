@@ -11,7 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EntityScan(basePackages = "com.url.ShortenIt.common.domain")
 @EnableJpaRepositories(basePackages = "com.url.ShortenIt.common.repository")
-@ComponentScan(basePackages = {"com.url.ShortenIt.urlservice", "com.url.ShortenIt.common.util"})
+@ComponentScan(basePackages = {"com.url.ShortenIt.urlservice", "com.url.ShortenIt.common"})
 public class UrlServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(UrlServiceApplication.class, args);

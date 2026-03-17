@@ -3,7 +3,7 @@ package com.url.ShortenIt.urlservice.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.url.ShortenIt.common.dto.request.LongUrlRequest;
 import com.url.ShortenIt.common.dto.response.ShortUrlResponse;
-import com.url.ShortenIt.common.repository.Urlrepository;
+import com.url.ShortenIt.common.repository.UrlRepository;
 import com.url.ShortenIt.urlservice.service.UrlManagementService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -29,7 +29,7 @@ class UrlManagementControllerTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
     @Autowired private UrlManagementService urlManagementService;
-    @Autowired private Urlrepository urlRepository;
+    @Autowired private UrlRepository urlRepository;
     @Autowired private JdbcTemplate jdbcTemplate;
 
     @AfterEach
