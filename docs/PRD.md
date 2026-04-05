@@ -72,7 +72,7 @@ URL Service → 매시간 정각 → expired_at < now() 인 URL 일괄 삭제
 
 ```
 Url
-├── urlId (Long, PK, IDENTITY)
+├── urlId (Long, PK, SnowFlake ID)
 ├── longUrl (String, max 2048, NOT NULL)
 ├── shortUrl (String, max 50, UNIQUE, NOT NULL)
 ├── expiredAt (Instant, nullable)
