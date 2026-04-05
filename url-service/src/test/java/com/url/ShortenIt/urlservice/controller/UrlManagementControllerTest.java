@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,9 +30,10 @@ class UrlManagementControllerTest {
     @Autowired private ObjectMapper objectMapper;
     @Autowired private UrlManagementService urlManagementService;
     @Autowired private Urlrepository urlRepository;
+    @Autowired private JdbcTemplate jdbcTemplate;
 
     @AfterEach
-    void tearDown() { urlRepository.deleteAll(); }
+    void tearDown() { jdbcTemplate.execute("DELETE FROM url"); }
 
     @Test
     @DisplayName("URL 단축 생성 테스트 - 성공")

@@ -20,9 +20,9 @@ public class ExpiredUrlCleanupScheduler {
     @Transactional
     public void cleanupExpiredUrls() {
         Instant now = Instant.now();
-        int deletedCount = urlrepository.deleteAllExpiredBefore(now);
+        int deletedCount = urlrepository.softDeleteAllExpiredBefore(now);
         if (deletedCount > 0) {
-            log.info("Expired URL cleanup: {} URLs deleted", deletedCount);
+            log.info("Expired URL cleanup: {} URLs soft-deleted", deletedCount);
         }
     }
 }
