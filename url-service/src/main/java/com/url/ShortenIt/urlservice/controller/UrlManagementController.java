@@ -3,7 +3,9 @@ package com.url.ShortenIt.urlservice.controller;
 import com.url.ShortenIt.common.dto.request.LongUrlRequest;
 import com.url.ShortenIt.common.dto.response.ShortUrlResponse;
 import com.url.ShortenIt.urlservice.service.UrlManagementService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,13 +22,9 @@ public class UrlManagementController {
 
     @PostMapping("/shorten")
     @Operation(summary = "URL 단축", description = "URL을 단축합니다.")
-    public ResponseEntity<ShortUrlResponse> createShortUrl(@RequestBody LongUrlRequest request) {
-        String longUrl = request.getLongUrl();
-        if (longUrl == null || longUrl.isBlank()) {
-            throw new IllegalArgumentException("long_url 값이 비어 있습니다.");
-        }
-        ShortUrlResponse response = urlManagementService.saveShortUrl(longUrl, request.getExpiredAt());
-        return ResponseEntity.ok(response);
+    public ResponseEntity<ShortUrlResponse> createShortUrl(@Valid @RequestBody LongUrlRequest request) {
+        ShortUrlResponse response = urlManagementService.saveShortUrl(request.getLongUrl(), request.getExpiredAt());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @DeleteMapping("/{shortUrl}")
