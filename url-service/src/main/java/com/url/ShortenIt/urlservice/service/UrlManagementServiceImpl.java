@@ -2,11 +2,13 @@ package com.url.ShortenIt.urlservice.service;
 
 import com.url.ShortenIt.common.domain.Url;
 import com.url.ShortenIt.common.dto.response.ShortUrlResponse;
+import com.url.ShortenIt.common.exception.UrlNotFoundException;
 import com.url.ShortenIt.common.repository.UrlRepository;
 import com.url.ShortenIt.common.service.CacheService;
 import com.url.ShortenIt.common.util.BaseConversion;
 import com.url.ShortenIt.common.util.SnowFlake;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -21,6 +23,7 @@ import java.util.Optional;
 import static com.url.ShortenIt.common.service.CacheService.CACHE_L2S_PREFIX;
 import static com.url.ShortenIt.common.service.CacheService.CACHE_S2L_PREFIX;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class UrlManagementServiceImpl implements UrlManagementService {
@@ -46,6 +49,7 @@ public class UrlManagementServiceImpl implements UrlManagementService {
             String shortUrl = url.get().getShortUrl();
             cacheService.put(CACHE_L2S_PREFIX + normalized, shortUrl);
             cacheService.put(CACHE_S2L_PREFIX + shortUrl, normalized);
+            log.info("Existing short URL returned: {} -> {}", shortUrl, normalized);
             return new ShortUrlResponse(shortUrl);
         } else {
             Long id = snowFlake.nextId();
@@ -55,6 +59,7 @@ public class UrlManagementServiceImpl implements UrlManagementService {
             Duration cacheTtl = cacheService.calculateCacheTtl(expiredAt);
             cacheService.put(CACHE_L2S_PREFIX + normalized, str, cacheTtl);
             cacheService.put(CACHE_S2L_PREFIX + str, normalized, cacheTtl);
+            log.info("New short URL created: {} -> {}", str, normalized);
             return new ShortUrlResponse(urlEntity.getShortUrl());
         }
     }
@@ -63,9 +68,10 @@ public class UrlManagementServiceImpl implements UrlManagementService {
     @Transactional
     public void deleteUrl(String shortUrl) {
         Url url = urlRepository.findByShortUrl(shortUrl)
-                .orElseThrow(() -> new IllegalArgumentException("Short URL not found: " + shortUrl));
+                .orElseThrow(() -> new UrlNotFoundException(shortUrl));
         String longUrl = url.getLongUrl();
         url.softDelete();
+        log.info("URL deleted: {} -> {}", shortUrl, longUrl);
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {

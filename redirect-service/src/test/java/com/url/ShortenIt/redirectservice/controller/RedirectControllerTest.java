@@ -58,6 +58,6 @@ class RedirectControllerTest {
     void testRedirect_NotFound() throws Exception {
         mockMvc.perform(get("/api/v1/url/{shortUrl}", "nonexistent"))
                 .andDo(print())
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isNotFound());
     }
 }

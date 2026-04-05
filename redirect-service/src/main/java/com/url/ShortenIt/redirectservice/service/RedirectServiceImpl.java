@@ -2,9 +2,12 @@ package com.url.ShortenIt.redirectservice.service;
 
 import com.url.ShortenIt.common.domain.Url;
 import com.url.ShortenIt.common.dto.response.UrlInfoResponse;
+import com.url.ShortenIt.common.exception.UrlExpiredException;
+import com.url.ShortenIt.common.exception.UrlNotFoundException;
 import com.url.ShortenIt.common.repository.UrlRepository;
 import com.url.ShortenIt.common.service.CacheService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +17,7 @@ import java.util.Optional;
 import static com.url.ShortenIt.common.service.CacheService.CACHE_L2S_PREFIX;
 import static com.url.ShortenIt.common.service.CacheService.CACHE_S2L_PREFIX;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class RedirectServiceImpl implements RedirectService {
@@ -30,10 +34,11 @@ public class RedirectServiceImpl implements RedirectService {
         }
 
         Optional<Url> url = urlRepository.findByShortUrl(shortUrl);
-        Url found = url.orElseThrow(() -> new IllegalArgumentException("Short URL not found: " + shortUrl));
+        Url found = url.orElseThrow(() -> new UrlNotFoundException(shortUrl));
         if (found.isExpired()) {
-            throw new IllegalStateException("This URL has expired: " + shortUrl);
+            throw new UrlExpiredException(shortUrl);
         }
+        log.info("Redirect: {} -> {}", shortUrl, found.getLongUrl());
         Duration cacheTtl = cacheService.calculateCacheTtl(found.getExpiredAt());
         cacheService.put(CACHE_S2L_PREFIX + shortUrl, found.getLongUrl(), cacheTtl);
         cacheService.put(CACHE_L2S_PREFIX + found.getLongUrl(), shortUrl, cacheTtl);
