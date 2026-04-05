@@ -1,15 +1,24 @@
 FROM eclipse-temurin:17-jdk-alpine AS build
 WORKDIR /app
-COPY ../gradlew .
-COPY ../gradle gradle
-COPY ../build.gradle .
-COPY ../settings.gradle .
-COPY ../common common
-COPY ../url-service url-service
-RUN chmod +x gradlew && ./gradlew :url-service:bootJar --no-daemon
+
+# Gradle 래퍼 및 빌드 설정 복사 (의존성 캐싱 레이어)
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle .
+COPY settings.gradle .
+COPY common/build.gradle common/build.gradle
+COPY url-service/build.gradle url-service/build.gradle
+RUN chmod +x gradlew && ./gradlew dependencies --no-daemon || true
+
+# 소스 코드 복사 및 빌드 (코드 변경 시에만 재실행)
+COPY common common
+COPY url-service url-service
+RUN ./gradlew :url-service:bootJar --no-daemon
 
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 COPY --from=build /app/url-service/build/libs/*.jar app.jar
+USER appuser
 EXPOSE 8081
 ENTRYPOINT ["java", "-jar", "app.jar"]
