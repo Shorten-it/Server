@@ -1,6 +1,6 @@
 package com.url.ShortenIt.urlservice.scheduler;
 
-import com.url.ShortenIt.common.repository.Urlrepository;
+import com.url.ShortenIt.common.repository.UrlRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -14,7 +14,7 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class ExpiredUrlCleanupScheduler {
 
-    private final Urlrepository urlrepository;
+    private final UrlRepository urlrepository;
 
     @Scheduled(cron = "0 0 * * * *")
     @Transactional

@@ -1,22 +1,21 @@
 package com.url.ShortenIt.redirectservice.service;
 
+import com.url.ShortenIt.common.service.CacheService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
+
+import static com.url.ShortenIt.common.service.CacheService.CACHE_L2S_PREFIX;
+import static com.url.ShortenIt.common.service.CacheService.CACHE_S2L_PREFIX;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class CacheInvalidationSubscriber {
 
-    private static final String CACHE_L2S_PREFIX = "L2S:";
-    private static final String CACHE_S2L_PREFIX = "S2L:";
-
-    @Autowired(required = false)
-    private StringRedisTemplate redisTemplate;
+    private final CacheService cacheService;
 
     public void onMessage(String message, String channel) {
-        if (redisTemplate == null) return;
         try {
             String[] parts = message.split("\\|", 2);
             if (parts.length != 2) {
@@ -26,8 +25,8 @@ public class CacheInvalidationSubscriber {
             String shortUrl = parts[0];
             String longUrl = parts[1];
 
-            redisTemplate.delete(CACHE_S2L_PREFIX + shortUrl);
-            redisTemplate.delete(CACHE_L2S_PREFIX + longUrl);
+            cacheService.delete(CACHE_S2L_PREFIX + shortUrl);
+            cacheService.delete(CACHE_L2S_PREFIX + longUrl);
             log.info("Cache invalidated for shortUrl={}, longUrl={}", shortUrl, longUrl);
         } catch (Exception e) {
             log.error("Failed to process cache invalidation message", e);

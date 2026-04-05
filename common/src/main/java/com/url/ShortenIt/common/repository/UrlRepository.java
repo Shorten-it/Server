@@ -12,7 +12,7 @@ import java.util.Optional;
 import com.url.ShortenIt.common.domain.Url;
 
 @Repository
-public interface Urlrepository extends JpaRepository<Url, Long> {
+public interface UrlRepository extends JpaRepository<Url, Long> {
 
     Optional<Url> findByLongUrl(String longUrl);
     Optional<Url> findByShortUrl(String shortUrl);
