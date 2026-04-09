@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jdk-alpine AS build
+FROM eclipse-temurin:17-jdk-jammy AS build
 WORKDIR /app
 
 # Gradle 래퍼 및 빌드 설정 복사 (의존성 캐싱 레이어)
@@ -15,9 +15,10 @@ COPY common common
 COPY url-service url-service
 RUN ./gradlew :url-service:bootJar --no-daemon
 
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 COPY --from=build /app/url-service/build/libs/*.jar app.jar
 USER appuser
 EXPOSE 8081
