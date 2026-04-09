@@ -124,16 +124,12 @@ k6 run k6/01-baseline.js
 # 2. Cache Hit
 k6 run k6/02-cache-hit.js
 
-# 3. Cache Stampede
-# 스크립트 실행 후, 별도 터미널에서 로그에 출력된 redis-cli DEL 명령어 실행
-k6 run k6/03-cache-stampede.js
+# 3. Cache Stampede (래퍼 스크립트: k6 실행 → ramp-up 대기 → 캐시 자동 삭제)
+./k6/run-stampede.sh
 
 # 4. Mixed
 k6 run k6/04-mixed.js
 
-# 5. 배치 삭제 중 읽기
-# 스크립트 실행 후, steady 구간에서 스케줄러 수동 트리거
-k6 run k6/05-batch-delete.js
+# 5. 배치 삭제 중 읽기 (래퍼 스크립트: k6 실행 → ramp-up 대기 → 스케줄러 자동 트리거)
+./k6/run-batch-delete.sh
 ```
-
-> `BASE_URL` 변경 시: `k6 run -e BASE_URL=http://localhost:8080 k6/01-baseline.js`
