@@ -15,8 +15,8 @@ echo "[2/3] ramp-up 대기 (40초)..."
 sleep 40
 
 echo "[3/3] 만료 URL 삭제 스케줄러 수동 트리거"
-curl -s -X POST "$URL_SERVICE/actuator/scheduledtasks" || echo "스케줄러 엔드포인트가 없으면 DB에서 직접 삭제:"
-echo "  docker exec shortly-db-1 psql -U \$POSTGRES_USER -d \$POSTGRES_DB -c \"DELETE FROM url WHERE expired_at < NOW()\""
+curl -s -X POST "$URL_SERVICE/api/v1/test/trigger-cleanup"
+echo "스케줄러 트리거 완료."
 
 echo "k6 종료 대기 중..."
 wait $K6_PID
